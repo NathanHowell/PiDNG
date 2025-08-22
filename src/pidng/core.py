@@ -14,11 +14,11 @@ class DNGBASE:
         self.tags = None
         self.filter = None
 
-    def __data_condition__(self, data : np.ndarray)  -> None:
+    def _data_condition(self, data : np.ndarray)  -> None:
         if data.dtype != np.uint16 and data.dtype != np.float32:
             raise Exception("RAW Data is not in correct format. Must be uint16_t or float32_t Numpy Array. ")
 
-    def __tags_condition__(self, tags : DNGTags)  -> None:
+    def _tags_condition(self, tags : DNGTags)  -> None:
         if not tags.get(Tag.ImageWidth):
             raise Exception("No width is defined in tags.")
         if not tags.get(Tag.ImageLength):
@@ -26,10 +26,10 @@ class DNGBASE:
         if not tags.get(Tag.BitsPerSample):
             raise Exception("Bit per pixel is not defined.")     
 
-    def __unpack_pixels__(self, data : np.ndarray) -> np.ndarray:
-        return data   
+    def _unpack_pixels(self, data : np.ndarray) -> np.ndarray:
+        return data
 
-    def __filter__(self, rawFrame: np.ndarray, filter : types.FunctionType) -> np.ndarray:
+    def _filter(self, rawFrame: np.ndarray, filter : types.FunctionType) -> np.ndarray:
 
         if not filter:
             return rawFrame
@@ -45,7 +45,7 @@ class DNGBASE:
         return processed
 
 
-    def __process__(self, rawFrame : np.ndarray, tags: DNGTags, compress : bool) -> bytearray:
+    def _process(self, rawFrame : np.ndarray, tags: DNGTags, compress : bool) -> bytearray:
 
         width = tags.get(Tag.ImageWidth).rawValue[0]
         length = tags.get(Tag.ImageLength).rawValue[0]
@@ -117,7 +117,7 @@ class DNGBASE:
         return buf
 
     def options(self, tags : DNGTags, path : str, compress=False) -> None:
-        self.__tags_condition__(tags)
+        self._tags_condition(tags)
         self.tags = tags
         self.compress = compress
         self.path = path
@@ -128,10 +128,10 @@ class DNGBASE:
             raise Exception("Options have not been set!")
         
         # valdify incoming data
-        self.__data_condition__(image)
-        unpacked = self.__unpack_pixels__(image)
-        filtered = self.__filter__(unpacked, self.filter)
-        buf = self.__process__(filtered, self.tags, self.compress)
+        self._data_condition(image)
+        unpacked = self._unpack_pixels(image)
+        filtered = self._filter(unpacked, self.filter)
+        buf = self._process(filtered, self.tags, self.compress)
 
         file_output = False
         if len(filename) > 0:
@@ -212,6 +212,3 @@ class PICAM2DNG(RPICAM2DNG):
         self.tags = self.model.tags
         self.compress = compress
         self.path = ""
-    
-
-

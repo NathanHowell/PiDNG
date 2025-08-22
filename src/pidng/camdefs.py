@@ -27,8 +27,8 @@ class BaseCameraModel():
     def fromJson(jsn : str) -> None:
         parameters = json.loads(jsn)
 
-    def __repr__(self) -> DNGTags:
-        return self.tags
+    def __repr__(self) -> str:
+        return f"BaseCameraModel(model='{self.model}')"
 
     def __str__(self) -> str:
         return str(self.model)
@@ -49,7 +49,7 @@ class Picamera2Camera(BaseCameraModel):
         self.fmt["bpp"] = bpp
 
         black_levels = list()
-        for val in self.metadata.get("SensorBlackLevels", (0)):
+        for val in self.metadata.get("SensorBlackLevels", [0]):
             black_levels.append((val >> (16 - bpp)))
         
         camera_calibration = [[1, 1], [0, 1], [0, 1],
@@ -98,13 +98,13 @@ class Picamera2Camera(BaseCameraModel):
         elif "RGGB" in fmt_str:
             self.cfaPattern = CFAPattern.RGGB
 
-        exposure_time = int(1/(self.metadata["ExposureTime"] * 0.000001))
-        total_gain = self.metadata["AnalogueGain"] * self.metadata["DigitalGain"]
+        exposure_time = int(1/(self.metadata.get("ExposureTime", 33333) * 0.000001))
+        total_gain = self.metadata.get("AnalogueGain", 1.0) * self.metadata.get("DigitalGain", 1.0)
         iso = int(total_gain * 100)
 
         self.tags.set(Tag.PhotographicSensitivity, [iso]) 
         self.tags.set(Tag.ExposureTime, [[1,exposure_time]])  
-        self.tags.set(Tag.RawDataUniqueID, str(self.metadata["SensorTimestamp"]).encode("ascii"))
+        self.tags.set(Tag.RawDataUniqueID, str(self.metadata.get("SensorTimestamp", 0)).encode("ascii"))
         self.tags.set(Tag.ImageWidth, width)
         self.tags.set(Tag.ImageLength, height)
         self.tags.set(Tag.Orientation, self.orientation)
@@ -132,7 +132,7 @@ class Picamera2Camera(BaseCameraModel):
         else:
             # For mono raw sensors
             self.tags.set(Tag.BlackLevelRepeatDim, [1,1])
-            self.tags.set(Tag.BlackLevel, [black_levels[0]])
+            self.tags.set(Tag.BlackLevel, [black_levels[0] if black_levels else 0])
             self.tags.set(Tag.PhotometricInterpretation, PhotometricInterpretation.Linear_Raw)
         
 class RaspberryPiHqCamera(BaseCameraModel):

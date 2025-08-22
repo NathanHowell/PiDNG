@@ -11,7 +11,7 @@ license = "MIT"
 authors = [
     {name = "Csaba Nagy"}
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.9"
 dependencies = [
     "numpy",
 ]
@@ -21,9 +21,6 @@ classifiers = [
     "Topic :: Multimedia :: Graphics :: Graphics Conversion",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -32,6 +29,14 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/schoolpost/PiDNG"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=6.0",
+]
+dev = [
+    "ruff",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -54,3 +59,41 @@ include-dirs = [
 ]
 extra-compile-args = ["-std=gnu99"]
 extra-link-args = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["src/pidng"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+]
